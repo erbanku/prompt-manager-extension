@@ -1,0 +1,53 @@
+{
+    "manifest_version": 3,
+    "name": "Prompt Manager",
+    "version": "1.0.0",
+    "description": "A simple prompt manager with a calm, modern UI",
+    "action": {
+        "default_popup": "popup.html",
+        "default_icon": {
+            "16": "./assets/icon16.png",
+            "48": "./assets/icon48.png",
+            "128": "./assets/icon128.png"
+        }
+    },
+    "options_ui": {
+        "page": "fullpage.html",
+        "open_in_tab": true
+    },
+    "side_panel": {
+        "default_path": "sidepanel.html"
+    },
+    "background": {
+        "service_worker": "background.js"
+    },
+    "commands": {
+        "_execute_action": {
+            "suggested_key": {
+                "default": "Alt+P",
+                "mac": "Alt+P"
+            },
+            "description": "Open Prompt Manager popup"
+        },
+        "open-fullpage": {
+            "suggested_key": {
+                "default": "Alt+Shift+P",
+                "mac": "Alt+Shift+P"
+            },
+            "description": "Open Prompt Manager in full page"
+        }
+    },
+    "permissions": [
+        "storage",
+        "sidePanel"
+    ],
+    "host_permissions": [
+        "http://*/*",
+        "https://*/*"
+    ],
+    "icons": {
+        "16": "./assets/icon16.png",
+        "48": "./assets/icon48.png",
+        "128": "./assets/icon128.png"
+    }
+}

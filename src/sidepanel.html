@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prompt Manager - Sidebar</title>
+    <link rel="stylesheet" href="sidepanel.css">
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <h1>Prompt Manager</h1>
+            <div class="header-buttons">
+                <button id="darkModeToggle" class="btn-icon" title="Toggle dark mode">
+                    <svg class="icon-sun" width="16" height="16" viewBox="0 0 16 16" fill="none">
+                        <circle cx="8" cy="8" r="3.5" stroke="currentColor" stroke-width="1.5" />
+                        <path
+                            d="M8 1V2M8 14V15M15 8H14M2 8H1M12.5 3.5L11.8 4.2M4.2 11.8L3.5 12.5M12.5 12.5L11.8 11.8M4.2 4.2L3.5 3.5"
+                            stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+                    </svg>
+                    <svg class="icon-moon" width="16" height="16" viewBox="0 0 16 16" fill="none"
+                        style="display: none;">
+                        <path
+                            d="M14 9C13.0489 9.6531 11.9091 10 10.7 10C7.60721 10 5.1 7.53757 5.1 4.5C5.1 3.31566 5.44738 2.20021 6.1 1.27C3.73995 1.97776 2 4.18886 2 6.8C2 9.89279 4.46243 12.4 7.5 12.4C10.0774 12.4 12.2524 10.7025 14 9Z"
+                            stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
+                </button>
+                <button id="toggleAddBtn" class="btn-toggle-add">+</button>
+                <button id="toggleAllBtn" class="btn-icon" title="Collapse/Expand all" style="display: none;">
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                        <path d="M13 10L8 5L3 10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </button>
+            </div>
+        </header>
+
+        <div class="search-section">
+            <input type="text" id="searchInput" placeholder="Search prompts..." class="search-input" />
+        </div>
+
+        <div class="add-prompt-section" id="addPromptSection" style="display: none;">
+            <input type="text" id="titleInput" placeholder="Prompt title (required)" class="title-input" required />
+            <textarea id="promptInput" placeholder="Enter your prompt here..." rows="4"></textarea>
+            <div class="add-actions">
+                <button id="cancelBtn" class="btn btn-secondary">Cancel</button>
+                <button id="addPromptBtn" class="btn btn-primary">Save</button>
+            </div>
+        </div>
+
+        <div class="prompts-section">
+            <div id="promptsList" class="prompts-list">
+                <p class="empty-state">No prompts saved yet. Click "+" to add one!</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="sidepanel.js"></script>
+</body>
+
+</html>

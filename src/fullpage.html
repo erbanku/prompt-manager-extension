@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Prompt Manager - Full View</title>
+  <link rel="stylesheet" href="fullpage.css">
+</head>
+<body>
+  <div class="container">
+    <header class="header">
+      <div class="header-content">
+        <div class="header-left">
+          <h1>Prompt Manager</h1>
+          <div class="search-container">
+            <svg class="search-icon" width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <path d="M7 12C9.76142 12 12 9.76142 12 7C12 4.23858 9.76142 2 7 2C4.23858 2 2 4.23858 2 7C2 9.76142 4.23858 12 7 12Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M14 14L10.5 10.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <input type="text" id="searchInput" class="search-input" placeholder="Search prompts...">
+          </div>
+        </div>
+        <div class="header-right">
+          <label class="preview-toggle">
+            <input type="checkbox" id="previewToggle" checked>
+            <span>Show preview</span>
+          </label>
+          <div class="preview-lines-selector">
+            <label for="previewLinesSelect">Lines:</label>
+            <select id="previewLinesSelect" class="preview-lines-select">
+              <option value="5">5</option>
+              <option value="8">8</option>
+              <option value="10" selected>10</option>
+              <option value="15">15</option>
+              <option value="20">20</option>
+              <option value="999">All</option>
+            </select>
+          </div>
+          <button id="collapseAllBtn" class="btn-icon-label" title="Collapse all prompts">
+            <svg class="icon-collapse" width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <path d="M13 10L8 5L3 10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M13 14L8 9L3 14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <svg class="icon-expand" width="16" height="16" viewBox="0 0 16 16" fill="none" style="display: none;">
+              <path d="M3 6L8 11L13 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M3 2L8 7L13 2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <span>Collapse All</span>
+          </button>
+          <button id="darkModeToggle" class="btn-icon" title="Toggle dark mode">
+            <svg class="icon-sun" width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <circle cx="8" cy="8" r="3.5" stroke="currentColor" stroke-width="1.5"/>
+              <path d="M8 1V2M8 14V15M15 8H14M2 8H1M12.5 3.5L11.8 4.2M4.2 11.8L3.5 12.5M12.5 12.5L11.8 11.8M4.2 4.2L3.5 3.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+            <svg class="icon-moon" width="16" height="16" viewBox="0 0 16 16" fill="none" style="display: none;">
+              <path d="M14 9C13.0489 9.6531 11.9091 10 10.7 10C7.60721 10 5.1 7.53757 5.1 4.5C5.1 3.31566 5.44738 2.20021 6.1 1.27C3.73995 1.97776 2 4.18886 2 6.8C2 9.89279 4.46243 12.4 7.5 12.4C10.0774 12.4 12.2524 10.7025 14 9Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+          <button id="exportBtn" class="btn-icon-label" title="Create local backup">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <path d="M8 3V11M8 3L5.5 5.5M8 3L10.5 5.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M2 13H14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+            <span>Backup</span>
+          </button>
+          <button id="importBtn" class="btn-icon-label" title="Restore from backup">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <path d="M8 11V3M8 11L5.5 8.5M8 11L10.5 8.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M2 13H14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+            <span>Restore</span>
+          </button>
+          <button id="settingsBtn" class="btn-icon-label" title="Sync Settings">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <path d="M8 10C9.10457 10 10 9.10457 10 8C10 6.89543 9.10457 6 8 6C6.89543 6 6 6.89543 6 8C6 9.10457 6.89543 10 8 10Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M13 8C13 8.5 13.2 9.1 13.4 9.6L12 10.4C11.8 10.5 11.7 10.8 11.8 11L12.5 12.5C12.6 12.7 12.9 12.8 13.1 12.7L14.5 11.9C15 12.3 15.6 12.6 16.2 12.8V14.5C16.2 14.7 16.4 15 16.7 15H18.3C18.5 15 18.8 14.8 18.8 14.5V12.8C19.4 12.6 20 12.3 20.5 11.9L21.9 12.7C22.1 12.8 22.4 12.7 22.5 12.5L23.2 11C23.3 10.8 23.2 10.5 23 10.4L21.6 9.6C21.8 9.1 22 8.5 22 8C22 7.5 21.8 6.9 21.6 6.4L23 5.6C23.2 5.5 23.3 5.2 23.2 5L22.5 3.5C22.4 3.3 22.1 3.2 21.9 3.3L20.5 4.1C20 3.7 19.4 3.4 18.8 3.2V1.5C18.8 1.3 18.6 1 18.3 1H16.7C16.5 1 16.2 1.2 16.2 1.5V3.2C15.6 3.4 15 3.7 14.5 4.1L13.1 3.3C12.9 3.2 12.6 3.3 12.5 3.5L11.8 5C11.7 5.2 11.8 5.5 12 5.6L13.4 6.4C13.2 6.9 13 7.5 13 8Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" transform="scale(0.5) translate(8, 8)"/>
+            </svg>
+            <span>Settings</span>
+          </button>
+          <button id="toggleAddBtn" class="btn-toggle-add">+ New Prompt</button>
+        </div>
+        <input type="file" id="importFileInput" accept=".json" style="display: none;">
+      </div>
+    </header>
+
+    <div class="main-content">
+      <div class="prompts-section">
+        <div class="section-header">
+          <h2>Saved Prompts</h2>
+          <span id="promptCount" class="prompt-count">0 prompts</span>
+        </div>
+        <div id="promptsList" class="prompts-grid">
+          <p class="empty-state">No prompts saved yet. Click "New Prompt" to add one!</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add Prompt Modal -->
+  <div id="addPromptModal" class="modal" style="display: none;">
+    <div class="modal-content modal-add-prompt">
+      <div class="modal-header">
+        <h2>Create New Prompt</h2>
+        <button id="closeAddPromptBtn" class="btn-close">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <path d="M12 4L4 12M4 4L12 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label>Title</label>
+          <input
+            type="text"
+            id="titleInput"
+            placeholder="Prompt title (required)"
+            class="form-input"
+            required
+          />
+        </div>
+        <div class="form-group">
+          <label>Prompt Content</label>
+          <textarea
+            id="promptInput"
+            placeholder="Enter your prompt here..."
+            rows="8"
+            class="form-input"
+            style="min-height: 150px; resize: vertical;"
+          ></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button id="cancelBtn" class="btn btn-secondary">Cancel</button>
+        <button id="addPromptBtn" class="btn btn-primary">Save Prompt</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Settings Modal -->
+  <div id="settingsModal" class="modal" style="display: none;">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Sync Settings</h2>
+        <button id="closeSettingsBtn" class="btn-close">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <path d="M12 4L4 12M4 4L12 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="sync-tabs">
+          <button class="sync-tab active" data-tab="s3">S3 Sync</button>
+          <button class="sync-tab" data-tab="webdav">WebDAV Sync</button>
+        </div>
+
+        <!-- S3 Settings -->
+        <div id="s3Tab" class="sync-tab-content">
+          <div class="form-group">
+            <label class="checkbox-label">
+              <input type="checkbox" id="s3Enabled">
+              <span>Enable S3 Sync</span>
+            </label>
+          </div>
+          <div id="s3Config">
+            <div class="form-group">
+              <label>Custom Endpoint (optional)</label>
+              <input type="text" id="s3Endpoint" placeholder="s3.us-east-1.amazonaws.com" class="form-input">
+              <small class="form-hint">For S3-compatible services (e.g., R2, MinIO). Leave empty for AWS S3.</small>
+            </div>
+            <div class="form-group">
+              <label>S3 Bucket Name</label>
+              <input type="text" id="s3Bucket" placeholder="my-bucket" class="form-input">
+            </div>
+            <div class="form-group">
+              <label>Region</label>
+              <input type="text" id="s3Region" placeholder="us-east-1" class="form-input">
+            </div>
+            <div class="form-group">
+              <label>Access Key ID</label>
+              <input type="text" id="s3AccessKey" class="form-input">
+            </div>
+            <div class="form-group">
+              <label>Secret Access Key</label>
+              <input type="password" id="s3SecretKey" class="form-input">
+            </div>
+            <div class="form-group">
+              <label>Backup Directory (optional)</label>
+              <input type="text" id="s3FilePath" placeholder="prompts" class="form-input">
+              <small class="form-hint">Directory in your bucket for storing backups</small>
+            </div>
+            <div class="sync-actions">
+              <button id="s3TestBtn" class="btn btn-secondary">Test Connection</button>
+              <button id="s3SyncBtn" class="btn btn-primary">Create Backup</button>
+              <button id="s3RestoreBtn" class="btn btn-secondary">Restore Backup</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- WebDAV Settings -->
+        <div id="webdavTab" class="sync-tab-content" style="display: none;">
+          <div class="form-group">
+            <label class="checkbox-label">
+              <input type="checkbox" id="webdavEnabled">
+              <span>Enable WebDAV Sync</span>
+            </label>
+          </div>
+          <div id="webdavConfig">
+            <div class="form-group">
+              <label>WebDAV Server URL</label>
+              <input type="text" id="webdavUrl" placeholder="webdav.example.com/remote.php/dav/files/user" class="form-input">
+              <small class="form-hint">URL will default to https:// if not specified</small>
+            </div>
+            <div class="form-group">
+              <label>Username</label>
+              <input type="text" id="webdavUsername" class="form-input">
+            </div>
+            <div class="form-group">
+              <label>Password</label>
+              <input type="password" id="webdavPassword" class="form-input">
+            </div>
+            <div class="form-group">
+              <label>Backup Directory (optional)</label>
+              <input type="text" id="webdavFilePath" placeholder="prompts" class="form-input">
+              <small class="form-hint">Directory on your server for storing backups</small>
+            </div>
+            <div class="sync-actions">
+              <button id="webdavTestBtn" class="btn btn-secondary">Test Connection</button>
+              <button id="webdavSyncBtn" class="btn btn-primary">Create Backup</button>
+              <button id="webdavRestoreBtn" class="btn btn-secondary">Restore Backup</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button id="saveSettingsBtn" class="btn btn-primary">Save Settings</button>
+        <button id="cancelSettingsBtn" class="btn btn-secondary">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Privacy Footer -->
+  <footer class="privacy-footer">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" style="flex-shrink: 0;">
+      <rect x="5" y="11" width="14" height="10" rx="2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M12 17V17.01" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M8 11V7C8 4.79086 9.79086 3 12 3C14.2091 3 16 4.79086 16 7V11" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+    <p>
+      <strong>No BS!</strong> All your content and configs stay local or on the S3/WebDAV service you chose to back up.
+      <span class="privacy-emphasis">You are totally in control.</span>
+    </p>
+  </footer>
+
+  <!-- Notification Toast Container -->
+  <div id="notificationContainer" class="notification-container"></div>
+
+  <script src="fullpage.js"></script>
+</body>
+</html>

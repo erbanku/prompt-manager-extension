@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prompt Manager</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <h1>Prompt Manager</h1>
+            <div class="header-buttons">
+                <button id="darkModeToggle" class="btn-icon" title="Toggle dark mode">
+                    <svg class="icon-sun" width="14" height="14" viewBox="0 0 16 16" fill="none">
+                        <circle cx="8" cy="8" r="3.5" stroke="currentColor" stroke-width="1.5" />
+                        <path
+                            d="M8 1V2M8 14V15M15 8H14M2 8H1M12.5 3.5L11.8 4.2M4.2 11.8L3.5 12.5M12.5 12.5L11.8 11.8M4.2 4.2L3.5 3.5"
+                            stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+                    </svg>
+                    <svg class="icon-moon" width="14" height="14" viewBox="0 0 16 16" fill="none"
+                        style="display: none;">
+                        <path
+                            d="M14 9C13.0489 9.6531 11.9091 10 10.7 10C7.60721 10 5.1 7.53757 5.1 4.5C5.1 3.31566 5.44738 2.20021 6.1 1.27C3.73995 1.97776 2 4.18886 2 6.8C2 9.89279 4.46243 12.4 7.5 12.4C10.0774 12.4 12.2524 10.7025 14 9Z"
+                            stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
+                </button>
+                <button id="openFullPageBtn" class="btn-icon" title="Open full page view">
+                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                        <path
+                            d="M5 1H2C1.44772 1 1 1.44772 1 2V5M13 9V12C13 12.5523 12.5523 13 12 13H9M9 1H12C12.5523 1 13 1.44772 13 2V5M1 9V12C1 12.5523 1.44772 13 2 13H5"
+                            stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
+                </button>
+                <button id="toggleAddBtn" class="btn-toggle-add">+ New</button>
+                <button id="toggleAllBtn" class="btn-icon" title="Collapse/Expand all" style="display: none;">
+                    <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+                        <path d="M13 10L8 5L3 10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </button>
+                <button id="openSidebarBtn" class="btn-icon" title="Open in sidebar">
+                    <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+                        <rect x="1.5" y="2.5" width="13" height="11" rx="1.5" stroke="currentColor"
+                            stroke-width="1.5" />
+                        <path d="M5.5 2.5V13.5" stroke="currentColor" stroke-width="1.5" />
+                    </svg>
+                </button>
+            </div>
+        </header>
+
+        <div class="add-prompt-section" id="addPromptSection" style="display: none;">
+            <input type="text" id="titleInput" placeholder="Prompt title (required)" class="title-input" required />
+            <textarea id="promptInput" placeholder="Enter your prompt here..." rows="4"></textarea>
+            <div class="add-actions">
+                <button id="cancelBtn" class="btn btn-secondary">Cancel</button>
+                <button id="addPromptBtn" class="btn btn-primary">Save</button>
+            </div>
+        </div>
+
+        <div class="prompts-section">
+            <div id="promptsList" class="prompts-list">
+                <p class="empty-state">No prompts saved yet. Click "+ New" to add one!</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="popup.js"></script>
+</body>
+
+</html>

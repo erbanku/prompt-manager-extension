@@ -1,0 +1,718 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Icon Generator - Prompt Manager</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 40px 20px;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background:
+                radial-gradient(circle at 20% 50%, rgba(120, 119, 198, 0.3), transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(34, 197, 94, 0.3), transparent 50%),
+                radial-gradient(circle at 40% 20%, rgba(251, 146, 60, 0.2), transparent 50%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 60px;
+            animation: fadeInDown 0.6s ease;
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes scaleIn {
+            from {
+                opacity: 0;
+                transform: scale(0.9);
+            }
+
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        h1 {
+            font-size: 3.5rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #ffffff 0%, #f0fdf4 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 16px;
+            letter-spacing: -0.02em;
+            text-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .subtitle {
+            font-size: 1.25rem;
+            color: rgba(255, 255, 255, 0.9);
+            font-weight: 400;
+            letter-spacing: 0.01em;
+        }
+
+        .style-selector {
+            display: flex;
+            justify-content: center;
+            gap: 16px;
+            margin-bottom: 24px;
+            animation: fadeInUp 0.6s ease 0.2s both;
+            flex-wrap: wrap;
+        }
+
+        .style-btn {
+            padding: 16px 32px;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 16px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            color: white;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .style-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.05));
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .style-btn:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 30px rgba(34, 197, 94, 0.3);
+            border-color: rgba(34, 197, 94, 0.5);
+        }
+
+        .style-btn:hover::before {
+            opacity: 1;
+        }
+
+        .style-btn.active {
+            background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+            border-color: #22c55e;
+            box-shadow: 0 8px 30px rgba(34, 197, 94, 0.4);
+            transform: translateY(-2px);
+        }
+
+        .style-description {
+            text-align: center;
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 16px;
+            margin-bottom: 50px;
+            min-height: 24px;
+            font-weight: 500;
+            animation: fadeInUp 0.6s ease 0.3s both;
+        }
+
+        .icons-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 32px;
+            margin: 50px 0;
+            animation: fadeInUp 0.6s ease 0.4s both;
+        }
+
+        .icon-item {
+            text-align: center;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 36px 28px;
+            border-radius: 24px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .icon-item:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
+        }
+
+        canvas {
+            border: 2px solid #f3f4f6;
+            border-radius: 16px;
+            margin-bottom: 20px;
+            display: block;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        .icon-item:hover canvas {
+            box-shadow: 0 8px 20px rgba(34, 197, 94, 0.2);
+            border-color: #22c55e;
+        }
+
+        .icon-size {
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 16px;
+            font-size: 18px;
+            letter-spacing: -0.01em;
+        }
+
+        .download-btn {
+            background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+            color: white;
+            border: none;
+            padding: 12px 28px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            font-size: 15px;
+            box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);
+            width: 100%;
+        }
+
+        .download-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(34, 197, 94, 0.4);
+            background: linear-gradient(135deg, #16a34a 0%, #15803d 100%);
+        }
+
+        .download-btn:active {
+            transform: translateY(0);
+        }
+
+        .download-all {
+            text-align: center;
+            margin: 50px 0;
+            animation: fadeInUp 0.6s ease 0.5s both;
+        }
+
+        .download-all-btn {
+            background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+            color: white;
+            border: none;
+            padding: 20px 48px;
+            border-radius: 16px;
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 18px;
+            box-shadow: 0 10px 30px rgba(34, 197, 94, 0.4);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .download-all-btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        .download-all-btn:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        .download-all-btn:hover {
+            transform: translateY(-4px) scale(1.02);
+            box-shadow: 0 15px 40px rgba(34, 197, 94, 0.5);
+        }
+
+        .download-all-btn:active {
+            transform: translateY(-2px) scale(0.98);
+        }
+
+        .info {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 36px;
+            border-radius: 24px;
+            margin-top: 50px;
+            border-left: 6px solid #22c55e;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+            animation: fadeInUp 0.6s ease 0.6s both;
+        }
+
+        .info h3 {
+            color: #22c55e;
+            margin-bottom: 24px;
+            font-size: 24px;
+            font-weight: 700;
+            letter-spacing: -0.01em;
+        }
+
+        .info ol {
+            color: #4b5563;
+            line-height: 2;
+            font-size: 16px;
+            padding-left: 24px;
+        }
+
+        .info ol li {
+            margin-bottom: 12px;
+            padding-left: 8px;
+        }
+
+        .info code {
+            background: #f3f4f6;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-family: 'Fira Code', 'Courier New', monospace;
+            font-size: 14px;
+            color: #16a34a;
+            font-weight: 600;
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2.5rem;
+            }
+
+            .subtitle {
+                font-size: 1.1rem;
+            }
+
+            .icons-container {
+                grid-template-columns: 1fr;
+                gap: 24px;
+            }
+
+            .style-btn {
+                padding: 14px 24px;
+                font-size: 15px;
+            }
+
+            .info {
+                padding: 24px;
+            }
+        }
+
+        /* Smooth scroll */
+        html {
+            scroll-behavior: smooth;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <h1>🎨 Icon Generator</h1>
+            <p class="subtitle">Create stunning icons for your Prompt Manager extension</p>
+        </header>
+
+        <div class="style-selector">
+            <button class="style-btn active" data-style="letter">📝 Letter</button>
+            <button class="style-btn" data-style="minimal">⚡ Minimal</button>
+            <button class="style-btn" data-style="bold">💪 Bold</button>
+            <button class="style-btn" data-style="outlined">⭕ Outlined</button>
+            <button class="style-btn" data-style="emoji">✨ Emoji</button>
+            <button class="style-btn" data-style="abstract">🎭 Abstract</button>
+        </div>
+
+        <div class="style-description" id="styleDescription">
+            Large GitHub green "P" filling the canvas
+        </div>
+
+        <div class="icons-container">
+            <div class="icon-item">
+                <canvas id="icon16" width="16" height="16"></canvas>
+                <div class="icon-size">16×16</div>
+                <button class="download-btn" onclick="downloadIcon('icon16', 'icon16.png')">Download</button>
+            </div>
+            <div class="icon-item">
+                <canvas id="icon48" width="48" height="48"></canvas>
+                <div class="icon-size">48×48</div>
+                <button class="download-btn" onclick="downloadIcon('icon48', 'icon48.png')">Download</button>
+            </div>
+            <div class="icon-item">
+                <canvas id="icon128" width="128" height="128"></canvas>
+                <div class="icon-size">128×128</div>
+                <button class="download-btn" onclick="downloadIcon('icon128', 'icon128.png')">Download</button>
+            </div>
+        </div>
+
+        <div class="download-all">
+            <button class="download-all-btn" onclick="downloadAll()">⬇️ Download All Icons</button>
+        </div>
+
+        <div class="info">
+            <h3>📋 Installation Instructions</h3>
+            <ol>
+                <li>Create an <code>assets</code> folder in your extension directory (where manifest.json is located)
+                </li>
+                <li>Click "Download All Icons" or download each size individually</li>
+                <li>Save all three PNG files (<code>icon16.png</code>, <code>icon48.png</code>,
+                    <code>icon128.png</code>) in the <code>assets</code> folder
+                </li>
+                <li>The manifest.json already references these icons from <code>./assets/</code></li>
+                <li>Reload your extension in Chrome (chrome://extensions/) to see the new icons!</li>
+            </ol>
+        </div>
+    </div>
+
+    <script>
+        let currentStyle = 'letter';
+
+        const styleDescriptions = {
+            letter: 'Large GitHub green "P" filling the canvas',
+            minimal: 'Sleek minimal design with thin letterform',
+            bold: 'Extra bold and chunky letter style',
+            outlined: 'Outlined stroke style with transparent center',
+            emoji: 'Sparkles emoji (✨) for inspiration and creativity',
+            abstract: 'Modern geometric pattern with flowing curves'
+        };
+
+        // Style selector
+        document.querySelectorAll('.style-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.style-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                currentStyle = btn.dataset.style;
+                document.getElementById('styleDescription').textContent = styleDescriptions[currentStyle];
+                regenerateIcons();
+            });
+        });
+
+        function drawIcon(canvas, style) {
+            const ctx = canvas.getContext('2d');
+            const size = canvas.width;
+
+            // Enable high-quality rendering
+            ctx.imageSmoothingEnabled = true;
+            ctx.imageSmoothingQuality = 'high';
+
+            // Clear canvas
+            ctx.clearRect(0, 0, size, size);
+
+            // Draw based on style
+            switch (style) {
+                case 'letter':
+                    drawLetterIcon(ctx, size);
+                    break;
+                case 'minimal':
+                    drawMinimalIcon(ctx, size);
+                    break;
+                case 'bold':
+                    drawBoldIcon(ctx, size);
+                    break;
+                case 'outlined':
+                    drawOutlinedIcon(ctx, size);
+                    break;
+                case 'emoji':
+                    drawEmojiIcon(ctx, size);
+                    break;
+                case 'abstract':
+                    drawAbstractIcon(ctx, size);
+                    break;
+            }
+        }
+
+        function drawLetterIcon(ctx, size) {
+            // Clear canvas (transparent background)
+            ctx.clearRect(0, 0, size, size);
+
+            // Draw letter "P" filling canvas nicely
+            ctx.shadowColor = 'rgba(0, 0, 0, 0.2)';
+            ctx.shadowBlur = size * 0.06;
+            ctx.shadowOffsetX = 0;
+            ctx.shadowOffsetY = size * 0.02;
+
+            // GitHub green color
+            ctx.fillStyle = '#168840';
+            ctx.font = `900 ${size * 1.1}px -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('P', size / 2, size * 0.53);
+
+            // Reset shadow
+            ctx.shadowColor = 'transparent';
+            ctx.shadowBlur = 0;
+            ctx.shadowOffsetY = 0;
+        }
+
+        function drawMinimalIcon(ctx, size) {
+            ctx.clearRect(0, 0, size, size);
+
+            // Subtle shadow
+            ctx.shadowColor = 'rgba(0, 0, 0, 0.15)';
+            ctx.shadowBlur = size * 0.04;
+            ctx.shadowOffsetY = size * 0.015;
+
+            // Lighter green with thinner stroke
+            ctx.fillStyle = '#1a9d4d';
+            ctx.font = `300 ${size * 1.05}px -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('P', size / 2, size * 0.53);
+
+            ctx.shadowColor = 'transparent';
+        }
+
+        function drawBoldIcon(ctx, size) {
+            ctx.clearRect(0, 0, size, size);
+
+            // Strong shadow
+            ctx.shadowColor = 'rgba(0, 0, 0, 0.3)';
+            ctx.shadowBlur = size * 0.08;
+            ctx.shadowOffsetY = size * 0.03;
+
+            // Darker green, extra bold
+            ctx.fillStyle = '#0d6832';
+            ctx.font = `900 ${size * 1.15}px -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('P', size / 2, size * 0.53);
+
+            ctx.shadowColor = 'transparent';
+        }
+
+        function drawOutlinedIcon(ctx, size) {
+            ctx.clearRect(0, 0, size, size);
+
+            // Shadow for outline
+            ctx.shadowColor = 'rgba(0, 0, 0, 0.2)';
+            ctx.shadowBlur = size * 0.05;
+            ctx.shadowOffsetY = size * 0.02;
+
+            // Outlined style
+            ctx.strokeStyle = '#168840';
+            ctx.lineWidth = size * 0.08;
+            ctx.lineJoin = 'round';
+            ctx.lineCap = 'round';
+            ctx.font = `900 ${size * 1.1}px -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.strokeText('P', size / 2, size * 0.53);
+
+            ctx.shadowColor = 'transparent';
+        }
+
+        function drawEmojiIcon(ctx, size) {
+            const radius = size * 0.25;
+
+            // Draw shadow
+            ctx.shadowColor = 'rgba(0, 0, 0, 0.2)';
+            ctx.shadowBlur = size * 0.1;
+            ctx.shadowOffsetY = size * 0.05;
+
+            // Vibrant gradient background
+            const gradient = ctx.createLinearGradient(0, 0, size, size);
+            gradient.addColorStop(0, '#6366f1');
+            gradient.addColorStop(0.5, '#8b5cf6');
+            gradient.addColorStop(1, '#a855f7');
+
+            ctx.fillStyle = gradient;
+            ctx.beginPath();
+            ctx.roundRect(0, 0, size, size, radius);
+            ctx.fill();
+
+            // Reset shadow
+            ctx.shadowColor = 'transparent';
+            ctx.shadowBlur = 0;
+            ctx.shadowOffsetY = 0;
+
+            // Add radial highlight
+            const highlightGradient = ctx.createRadialGradient(
+                size * 0.35, size * 0.35, 0,
+                size * 0.35, size * 0.35, size * 0.7
+            );
+            highlightGradient.addColorStop(0, 'rgba(255, 255, 255, 0.25)');
+            highlightGradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
+
+            ctx.fillStyle = highlightGradient;
+            ctx.beginPath();
+            ctx.roundRect(0, 0, size, size, radius);
+            ctx.fill();
+
+            // Draw sparkles with glow
+            ctx.shadowColor = 'rgba(255, 255, 255, 0.6)';
+            ctx.shadowBlur = size * 0.15;
+
+            ctx.font = `${size * 0.65}px Arial`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('✨', size / 2, size / 2);
+        }
+
+        function drawAbstractIcon(ctx, size) {
+            const radius = size * 0.25;
+
+            // Draw shadow
+            ctx.shadowColor = 'rgba(0, 0, 0, 0.2)';
+            ctx.shadowBlur = size * 0.1;
+            ctx.shadowOffsetY = size * 0.05;
+
+            // Modern gradient background
+            const gradient = ctx.createLinearGradient(0, 0, size, size);
+            gradient.addColorStop(0, '#06b6d4');
+            gradient.addColorStop(0.5, '#14b8a6');
+            gradient.addColorStop(1, '#10b981');
+
+            ctx.fillStyle = gradient;
+            ctx.beginPath();
+            ctx.roundRect(0, 0, size, size, radius);
+            ctx.fill();
+
+            // Reset shadow
+            ctx.shadowColor = 'transparent';
+            ctx.shadowBlur = 0;
+            ctx.shadowOffsetY = 0;
+
+            // Add highlight overlay
+            const highlightGradient = ctx.createRadialGradient(
+                size * 0.3, size * 0.3, 0,
+                size * 0.3, size * 0.3, size
+            );
+            highlightGradient.addColorStop(0, 'rgba(255, 255, 255, 0.2)');
+            highlightGradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
+
+            ctx.fillStyle = highlightGradient;
+            ctx.beginPath();
+            ctx.roundRect(0, 0, size, size, radius);
+            ctx.fill();
+
+            // Draw modern abstract shapes with depth
+            ctx.shadowColor = 'rgba(0, 0, 0, 0.15)';
+            ctx.shadowBlur = size * 0.04;
+            ctx.shadowOffsetY = size * 0.02;
+
+            // Main circle
+            const mainGradient = ctx.createRadialGradient(
+                size * 0.35, size * 0.35, 0,
+                size * 0.35, size * 0.35, size * 0.25
+            );
+            mainGradient.addColorStop(0, 'rgba(255, 255, 255, 1)');
+            mainGradient.addColorStop(1, 'rgba(255, 255, 255, 0.85)');
+
+            ctx.fillStyle = mainGradient;
+            ctx.beginPath();
+            ctx.arc(size * 0.35, size * 0.35, size * 0.22, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Secondary circle with different gradient
+            const secondGradient = ctx.createRadialGradient(
+                size * 0.65, size * 0.65, 0,
+                size * 0.65, size * 0.65, size * 0.28
+            );
+            secondGradient.addColorStop(0, 'rgba(255, 255, 255, 0.95)');
+            secondGradient.addColorStop(1, 'rgba(255, 255, 255, 0.75)');
+
+            ctx.fillStyle = secondGradient;
+            ctx.beginPath();
+            ctx.arc(size * 0.65, size * 0.65, size * 0.25, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Connecting shape with subtle transparency
+            ctx.shadowBlur = size * 0.03;
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
+            ctx.beginPath();
+            ctx.ellipse(size * 0.5, size * 0.5, size * 0.18, size * 0.28, Math.PI / 4, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Add accent dots for detail
+            ctx.shadowColor = 'transparent';
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
+            ctx.beginPath();
+            ctx.arc(size * 0.25, size * 0.65, size * 0.08, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.beginPath();
+            ctx.arc(size * 0.75, size * 0.35, size * 0.06, 0, Math.PI * 2);
+            ctx.fill();
+        }
+
+        function regenerateIcons() {
+            drawIcon(document.getElementById('icon16'), currentStyle);
+            drawIcon(document.getElementById('icon48'), currentStyle);
+            drawIcon(document.getElementById('icon128'), currentStyle);
+        }
+
+        function downloadIcon(canvasId, filename) {
+            const canvas = document.getElementById(canvasId);
+            const url = canvas.toDataURL('image/png');
+            const link = document.createElement('a');
+            link.download = filename;
+            link.href = url;
+            link.click();
+        }
+
+        function downloadAll() {
+            setTimeout(() => downloadIcon('icon16', 'icon16.png'), 0);
+            setTimeout(() => downloadIcon('icon48', 'icon48.png'), 200);
+            setTimeout(() => downloadIcon('icon128', 'icon128.png'), 400);
+        }
+
+        // Generate icons on page load
+        window.onload = function () {
+            regenerateIcons();
+        };
+    </script>
+</body>
+
+</html>

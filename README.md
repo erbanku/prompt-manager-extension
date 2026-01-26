@@ -2,6 +2,9 @@
 
 A clean, simple Chrome extension to organize and copy your favorite prompts in one place.
 
+Chrome Web Store:
+https://chromewebstore.google.com/detail/github-go-to-fork/gmafgjjojobkaegbpnmkjlhjnfcbokdj
+
 ## Why?
 
 I couldn’t find an extension that was both effortless and powerful — so I built one!

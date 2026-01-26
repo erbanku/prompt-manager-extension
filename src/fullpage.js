@@ -77,6 +77,43 @@ function showNotification(message, type = "info", title = "", duration = 5000) {
 
 // State
 let allPrompts = [];
+
+// Utility: Save prompts (try sync first, fallback to local for large data)
+async function savePromptsChunked(prompts) {
+    try {
+        // Try sync storage first (for cross-device sync)
+        await chrome.storage.sync.set({ prompts: prompts });
+        // If successful, clear local storage copy
+        await chrome.storage.local.remove('prompts');
+    } catch (error) {
+        // If quota exceeded, use local storage instead
+        if (error.message && error.message.includes('quota')) {
+            console.log('Prompts too large for sync storage, using local storage');
+            await chrome.storage.local.set({ prompts: prompts });
+            // Clear sync storage copy
+            await chrome.storage.sync.remove('prompts');
+        } else {
+            throw error;
+        }
+    }
+}
+
+// Utility: Load prompts (check both sync and local)
+async function loadPromptsChunked() {
+    // Try sync storage first (preferred for cross-device sync)
+    const syncResult = await chrome.storage.sync.get(['prompts']);
+    if (syncResult.prompts) {
+        return syncResult.prompts;
+    }
+
+    // Fallback to local storage (for large prompts)
+    const localResult = await chrome.storage.local.get(['prompts']);
+    if (localResult.prompts) {
+        return localResult.prompts;
+    }
+
+    return [];
+}
 let showPreview = true;
 let previewLines = 10;
 
@@ -205,10 +242,9 @@ collapseAllBtn.addEventListener("click", () => {
 
 // Update CSS for preview lines
 function updatePreviewLinesCSS() {
-    // Calculate max-height: font-size (13px) * line-height (1.6) * number of lines
-    // For "All" option (999), use a very large value to show all content
-    const maxHeight =
-        previewLines >= 999 ? "9999px" : 13 * 1.6 * previewLines + "px";
+    // Use line-clamp to show only complete lines (no partial text)
+    // For "All" option (999), show all lines
+    const lineClamp = previewLines >= 999 ? "unset" : previewLines;
 
     // Find or create style element
     let styleEl = document.getElementById("preview-lines-style");
@@ -218,7 +254,7 @@ function updatePreviewLinesCSS() {
         document.head.appendChild(styleEl);
     }
 
-    styleEl.textContent = `.prompt-text { max-height: ${maxHeight} !important; }`;
+    styleEl.textContent = `.prompt-text { -webkit-line-clamp: ${lineClamp} !important; }`;
 }
 
 // Export to JSON
@@ -331,7 +367,7 @@ importFileInput.addEventListener("change", async (e) => {
         }
 
         // Save prompts
-        await chrome.storage.sync.set({ prompts: allPrompts });
+        await savePromptsChunked(allPrompts);
 
         // Import settings if available
         if (importedSettings) {
@@ -659,8 +695,7 @@ document.addEventListener("keydown", (e) => {
 // Load prompts from Chrome storage
 async function loadPrompts() {
     try {
-        const result = await chrome.storage.sync.get(["prompts"]);
-        allPrompts = result.prompts || [];
+        allPrompts = await loadPromptsChunked();
         renderPrompts(allPrompts);
         updatePromptCount(allPrompts.length);
     } catch (error) {
@@ -702,7 +737,7 @@ async function addPrompt() {
         };
 
         allPrompts.unshift(newPrompt);
-        await chrome.storage.sync.set({ prompts: allPrompts });
+        await savePromptsChunked(allPrompts);
 
         titleInput.value = "";
         promptInput.value = "";
@@ -719,7 +754,7 @@ async function addPrompt() {
 async function deletePrompt(id) {
     try {
         allPrompts = allPrompts.filter((p) => p.id !== id);
-        await chrome.storage.sync.set({ prompts: allPrompts });
+        await savePromptsChunked(allPrompts);
 
         // Re-apply search if active
         const searchTerm = searchInput.value.toLowerCase().trim();
@@ -1116,7 +1151,7 @@ function openEditModal(id) {
             if (promptIndex !== -1) {
                 allPrompts[promptIndex].title = title;
                 allPrompts[promptIndex].text = text;
-                await chrome.storage.sync.set({ prompts: allPrompts });
+                await savePromptsChunked(allPrompts);
 
                 // Re-render prompts
                 const searchTerm = searchInput.value.toLowerCase().trim();
@@ -1323,8 +1358,8 @@ async function restoreBackupData(backupData) {
 
     // Restore settings
     const settings = backupData.settings;
+    await savePromptsChunked(allPrompts);
     await chrome.storage.sync.set({
-        prompts: allPrompts,
         s3Config: settings.s3Config,
         webdavConfig: settings.webdavConfig,
         darkMode: settings.darkMode,

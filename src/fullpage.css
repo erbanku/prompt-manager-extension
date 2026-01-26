@@ -616,7 +616,9 @@ body.dark-mode .prompt-date {
   cursor: pointer;
   user-select: none;
   flex: 1;
-  max-height: 208px; /* Default 10 lines: 13px * 1.6 * 10 = 208px */
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 10; /* Default 10 lines */
 }
 
 body.dark-mode .prompt-text {
@@ -631,7 +633,7 @@ body.dark-mode .prompt-text {
 }
 
 .prompt-text.collapsed-preview {
-  max-height: 62.4px !important; /* 3 lines: 13px * 1.6 * 3 = 62.4px */
+  -webkit-line-clamp: 3; /* Show 3 complete lines */
 }
 
 .prompt-text.no-preview {

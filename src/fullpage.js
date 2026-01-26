@@ -116,11 +116,14 @@ async function loadPromptsChunked() {
 }
 let showPreview = true;
 let previewLines = 10;
+let currentTheme = 'green';
+let customThemeColor = '#10b981';
 
 // Load prompts and settings when page opens
 document.addEventListener("DOMContentLoaded", async () => {
     await loadSettings();
     await loadPrompts();
+    initThemeSelector();
 });
 
 // Load dark mode and preview settings
@@ -130,6 +133,8 @@ async function loadSettings() {
             "darkMode",
             "showPreview",
             "previewLines",
+            "theme",
+            "customThemeColor",
         ]);
 
         // Apply dark mode
@@ -146,6 +151,11 @@ async function loadSettings() {
         previewLines = result.previewLines || 10; // default 10
         previewLinesSelect.value = previewLines;
         updatePreviewLinesCSS();
+
+        // Apply theme
+        currentTheme = result.theme || 'green';
+        customThemeColor = result.customThemeColor || '#10b981';
+        applyTheme(currentTheme, customThemeColor);
     } catch (error) {
         console.error("Error loading settings:", error);
     }
@@ -2388,4 +2398,143 @@ async function getDeviceHostname() {
         console.error('Error getting hostname:', error);
         return 'Unknown Device';
     }
+}
+
+// Theme selector functionality
+function initThemeSelector() {
+    const themeBtns = document.querySelectorAll('.theme-btn[data-theme]');
+    const customThemeBtn = document.getElementById('customThemeBtn');
+    const customColorInput = document.getElementById('customColorInput');
+    const customColorText = document.getElementById('customColorText');
+
+    // Theme button click handlers
+    themeBtns.forEach(btn => {
+        btn.addEventListener('click', async () => {
+            const theme = btn.dataset.theme;
+            currentTheme = theme;
+            applyTheme(theme);
+            await chrome.storage.sync.set({ theme });
+            customColorInput.style.display = 'none';
+        });
+    });
+
+    // Custom color button - toggle input
+    customThemeBtn.addEventListener('click', () => {
+        const isVisible = customColorInput.style.display === 'block';
+        customColorInput.style.display = isVisible ? 'none' : 'block';
+        if (!isVisible) {
+            customColorText.focus();
+            customColorText.select();
+        }
+    });
+
+    // Custom color text input
+    customColorText.addEventListener('input', (e) => {
+        let value = e.target.value;
+        // Auto-add # if not present
+        if (value && !value.startsWith('#')) {
+            value = '#' + value;
+            e.target.value = value;
+        }
+    });
+
+    customColorText.addEventListener('keypress', async (e) => {
+        if (e.key === 'Enter') {
+            const color = customColorText.value.trim();
+            if (isValidColor(color)) {
+                customThemeColor = color;
+                currentTheme = 'custom';
+                applyTheme('custom', color);
+                await chrome.storage.sync.set({ theme: 'custom', customThemeColor: color });
+                customColorInput.style.display = 'none';
+            }
+        }
+    });
+
+    customColorText.addEventListener('blur', async () => {
+        const color = customColorText.value.trim();
+        if (color && isValidColor(color)) {
+            customThemeColor = color;
+            currentTheme = 'custom';
+            applyTheme('custom', color);
+            await chrome.storage.sync.set({ theme: 'custom', customThemeColor: color });
+        }
+        setTimeout(() => {
+            if (document.activeElement !== customColorText) {
+                customColorInput.style.display = 'none';
+            }
+        }, 150);
+    });
+
+    // Set initial value
+    customColorText.value = customThemeColor;
+}
+
+function isValidColor(color) {
+    return /^#[0-9A-Fa-f]{6}$/.test(color);
+}
+
+function applyTheme(theme, customColor = null) {
+    const body = document.body;
+    const isDarkMode = body.classList.contains('dark-mode');
+
+    // Remove all theme classes
+    body.removeAttribute('data-theme');
+
+    // Remove active class from all buttons
+    document.querySelectorAll('.theme-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+
+    if (theme === 'custom' && customColor) {
+        // Apply custom color with RGB values
+        const rgb = hexToRgb(customColor);
+        body.style.setProperty('--theme-color', customColor);
+        body.style.setProperty('--theme-color-hover', adjustColorBrightness(customColor, -20));
+        body.style.setProperty('--theme-color-light', hexToRgba(customColor, 0.1));
+        body.style.setProperty('--theme-color-dark', adjustColorBrightness(customColor, isDarkMode ? -40 : -30));
+        body.style.setProperty('--theme-color-rgb', rgb);
+        document.getElementById('customThemeBtn').classList.add('active');
+        document.getElementById('customThemeBtn').style.background = customColor;
+    } else {
+        // Apply preset theme
+        body.setAttribute('data-theme', theme);
+        const themeBtn = document.querySelector(`.theme-btn[data-theme="${theme}"]`);
+        if (themeBtn) {
+            themeBtn.classList.add('active');
+        }
+        // Reset custom button background to red
+        document.getElementById('customThemeBtn').style.background = '#ef4444';
+    }
+}
+
+// Helper function to adjust color brightness
+function adjustColorBrightness(hex, percent) {
+    const num = parseInt(hex.replace('#', ''), 16);
+    const amt = Math.round(2.55 * percent);
+    const R = (num >> 16) + amt;
+    const G = (num >> 8 & 0x00FF) + amt;
+    const B = (num & 0x0000FF) + amt;
+    return '#' + (
+        0x1000000 +
+        (R < 255 ? (R < 1 ? 0 : R) : 255) * 0x10000 +
+        (G < 255 ? (G < 1 ? 0 : G) : 255) * 0x100 +
+        (B < 255 ? (B < 1 ? 0 : B) : 255)
+    ).toString(16).slice(1);
+}
+
+// Helper function to convert hex to rgba
+function hexToRgba(hex, alpha) {
+    const r = parseInt(hex.slice(1, 3), 16);
+    const g = parseInt(hex.slice(3, 5), 16);
+    const b = parseInt(hex.slice(5, 7), 16);
+    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+}
+
+// Helper function to convert hex to rgb string
+function hexToRgb(hex) {
+    const r = parseInt(hex.slice(1, 3), 16);
+    const g = parseInt(hex.slice(3, 5), 16);
+    const b = parseInt(hex.slice(5, 7), 16);
+    return `${r}, ${g}, ${b}`;
 }

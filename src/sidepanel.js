@@ -13,6 +13,74 @@ const searchInput = document.getElementById("searchInput");
 let allPrompts = [];
 let editingPromptId = null;
 
+const PROMPTS_STORAGE_KEY = "prompts";
+const PROMPTS_STORAGE_AREA_KEY = "promptsStorageArea";
+
+function isQuotaExceededError(error) {
+    const message = error && typeof error.message === "string" ? error.message : "";
+    return /quota|MAX_ITEMS|MAX_WRITE_OPERATIONS/i.test(message);
+}
+
+// Utility: Load prompts (check both sync and local)
+async function loadPromptsChunked() {
+    const [syncResult, localResult] = await Promise.all([
+        chrome.storage.sync.get([PROMPTS_STORAGE_KEY, PROMPTS_STORAGE_AREA_KEY]),
+        chrome.storage.local.get([PROMPTS_STORAGE_KEY, PROMPTS_STORAGE_AREA_KEY]),
+    ]);
+
+    if (
+        localResult[PROMPTS_STORAGE_AREA_KEY] === "local" &&
+        Array.isArray(localResult[PROMPTS_STORAGE_KEY])
+    ) {
+        return localResult[PROMPTS_STORAGE_KEY];
+    }
+
+    if (
+        syncResult[PROMPTS_STORAGE_AREA_KEY] === "sync" &&
+        Array.isArray(syncResult[PROMPTS_STORAGE_KEY])
+    ) {
+        return syncResult[PROMPTS_STORAGE_KEY];
+    }
+
+    if (Array.isArray(syncResult[PROMPTS_STORAGE_KEY])) {
+        return syncResult[PROMPTS_STORAGE_KEY];
+    }
+
+    if (Array.isArray(localResult[PROMPTS_STORAGE_KEY])) {
+        return localResult[PROMPTS_STORAGE_KEY];
+    }
+
+    return [];
+}
+
+// Utility: Save prompts (try sync first, fallback to local for large data)
+async function savePromptsChunked(prompts) {
+    try {
+        await chrome.storage.sync.set({
+            [PROMPTS_STORAGE_KEY]: prompts,
+            [PROMPTS_STORAGE_AREA_KEY]: "sync",
+        });
+        await chrome.storage.local.remove([
+            PROMPTS_STORAGE_KEY,
+            PROMPTS_STORAGE_AREA_KEY,
+        ]);
+    } catch (error) {
+        if (!isQuotaExceededError(error)) {
+            throw error;
+        }
+
+        console.log("Prompts too large for sync storage, using local storage");
+        await chrome.storage.local.set({
+            [PROMPTS_STORAGE_KEY]: prompts,
+            [PROMPTS_STORAGE_AREA_KEY]: "local",
+        });
+        await chrome.storage.sync.remove([
+            PROMPTS_STORAGE_KEY,
+            PROMPTS_STORAGE_AREA_KEY,
+        ]);
+    }
+}
+
 // Load prompts and dark mode when sidepanel opens
 document.addEventListener("DOMContentLoaded", async () => {
     await loadDarkMode();
@@ -125,8 +193,7 @@ toggleAllBtn.addEventListener("click", () => {
 // Load prompts from Chrome storage
 async function loadPrompts() {
     try {
-        const result = await chrome.storage.sync.get(["prompts"]);
-        allPrompts = result.prompts || [];
+        allPrompts = await loadPromptsChunked();
         renderPrompts(allPrompts);
     } catch (error) {
         console.error("Error loading prompts:", error);
@@ -179,7 +246,7 @@ async function addPrompt() {
             allPrompts.unshift(newPrompt);
         }
 
-        await chrome.storage.sync.set({ prompts: allPrompts });
+        await savePromptsChunked(allPrompts);
 
         titleInput.value = "";
         promptInput.value = "";
@@ -206,9 +273,15 @@ function editPrompt(id) {
 
 // Delete a prompt
 async function deletePrompt(id) {
+    const prompt = allPrompts.find((p) => p.id === id);
+    if (!prompt) return;
+    
+    const confirmed = confirm(`Delete "${prompt.title}"?\n\nThis action cannot be undone.`);
+    if (!confirmed) return;
+    
     try {
         allPrompts = allPrompts.filter((p) => p.id !== id);
-        await chrome.storage.sync.set({ prompts: allPrompts });
+        await savePromptsChunked(allPrompts);
 
         const searchTerm = searchInput.value.toLowerCase().trim();
         if (searchTerm === "") {

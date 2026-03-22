@@ -78,38 +78,69 @@ function showNotification(message, type = "info", title = "", duration = 5000) {
 // State
 let allPrompts = [];
 
+const PROMPTS_STORAGE_KEY = "prompts";
+const PROMPTS_STORAGE_AREA_KEY = "promptsStorageArea";
+
+function isQuotaExceededError(error) {
+    const message = error && typeof error.message === "string" ? error.message : "";
+    return /quota|MAX_ITEMS|MAX_WRITE_OPERATIONS/i.test(message);
+}
+
 // Utility: Save prompts (try sync first, fallback to local for large data)
 async function savePromptsChunked(prompts) {
     try {
-        // Try sync storage first (for cross-device sync)
-        await chrome.storage.sync.set({ prompts: prompts });
-        // If successful, clear local storage copy
-        await chrome.storage.local.remove('prompts');
+        await chrome.storage.sync.set({
+            [PROMPTS_STORAGE_KEY]: prompts,
+            [PROMPTS_STORAGE_AREA_KEY]: "sync",
+        });
+        await chrome.storage.local.remove([
+            PROMPTS_STORAGE_KEY,
+            PROMPTS_STORAGE_AREA_KEY,
+        ]);
     } catch (error) {
-        // If quota exceeded, use local storage instead
-        if (error.message && error.message.includes('quota')) {
-            console.log('Prompts too large for sync storage, using local storage');
-            await chrome.storage.local.set({ prompts: prompts });
-            // Clear sync storage copy
-            await chrome.storage.sync.remove('prompts');
-        } else {
+        if (!isQuotaExceededError(error)) {
             throw error;
         }
+
+        console.log("Prompts too large for sync storage, using local storage");
+        await chrome.storage.local.set({
+            [PROMPTS_STORAGE_KEY]: prompts,
+            [PROMPTS_STORAGE_AREA_KEY]: "local",
+        });
+        await chrome.storage.sync.remove([
+            PROMPTS_STORAGE_KEY,
+            PROMPTS_STORAGE_AREA_KEY,
+        ]);
     }
 }
 
 // Utility: Load prompts (check both sync and local)
 async function loadPromptsChunked() {
-    // Try sync storage first (preferred for cross-device sync)
-    const syncResult = await chrome.storage.sync.get(['prompts']);
-    if (syncResult.prompts) {
-        return syncResult.prompts;
+    const [syncResult, localResult] = await Promise.all([
+        chrome.storage.sync.get([PROMPTS_STORAGE_KEY, PROMPTS_STORAGE_AREA_KEY]),
+        chrome.storage.local.get([PROMPTS_STORAGE_KEY, PROMPTS_STORAGE_AREA_KEY]),
+    ]);
+
+    if (
+        localResult[PROMPTS_STORAGE_AREA_KEY] === "local" &&
+        Array.isArray(localResult[PROMPTS_STORAGE_KEY])
+    ) {
+        return localResult[PROMPTS_STORAGE_KEY];
     }
 
-    // Fallback to local storage (for large prompts)
-    const localResult = await chrome.storage.local.get(['prompts']);
-    if (localResult.prompts) {
-        return localResult.prompts;
+    if (
+        syncResult[PROMPTS_STORAGE_AREA_KEY] === "sync" &&
+        Array.isArray(syncResult[PROMPTS_STORAGE_KEY])
+    ) {
+        return syncResult[PROMPTS_STORAGE_KEY];
+    }
+
+    if (Array.isArray(syncResult[PROMPTS_STORAGE_KEY])) {
+        return syncResult[PROMPTS_STORAGE_KEY];
+    }
+
+    if (Array.isArray(localResult[PROMPTS_STORAGE_KEY])) {
+        return localResult[PROMPTS_STORAGE_KEY];
     }
 
     return [];
@@ -1334,8 +1365,8 @@ function formatBackupDate(timestamp) {
 
 // Create complete backup object with prompts and settings
 async function createBackupData() {
+    const prompts = await loadPromptsChunked();
     const result = await chrome.storage.sync.get([
-        "prompts",
         "s3Config",
         "webdavConfig",
         "darkMode",
@@ -1346,7 +1377,7 @@ async function createBackupData() {
     return {
         version: "1.0",
         timestamp: new Date().toISOString(),
-        prompts: result.prompts || [],
+        prompts,
         settings: {
             s3Config: result.s3Config || null,
             webdavConfig: result.webdavConfig || null,

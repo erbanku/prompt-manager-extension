@@ -1,2 +1,4 @@
 /.claude
 src.pem
+dist/
+*.zip
